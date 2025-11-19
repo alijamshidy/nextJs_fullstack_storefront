@@ -9,7 +9,7 @@ export const fetchFeaturedProducts = async () => {
   return products;
 };
 export const fetchAllProducts = async () => {
-  const allProducts = await db.product.findMany({
+  const allProducts = await db?.product?.findMany({
     orderBy: {
       createdAt: "desc",
     },
