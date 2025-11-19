@@ -6,6 +6,7 @@ export const fetchFeaturedProducts = async () => {
       featured: true,
     },
   });
+  // await new Promise(resolve => setTimeout(resolve, 5000));
   return products;
 };
 export const fetchAllProducts = async () => {
