@@ -9,15 +9,14 @@ export default function ProductsGrid({ products }: { products: Product[] }) {
   return (
     <div className="pt-12 grid gap-4 md:grid-cols-3 lg:grid-cols-3">
       {products.map(product => {
-        const { name, price, image } = product;
+        const { name, price, image, id } = product;
 
-        const productId = product.id;
         const dollarsAmount = formatCurrency(price);
         return (
           <article
-            key={productId}
+            key={id}
             className="group relative">
-            <Link href={`/products/${productId}`}>
+            <Link href={`/products/${id}`}>
               <Card className="transform group-hover:shadow-xl transition-shadow duration-500">
                 <CardContent className="p-4">
                   <div className="relative h-64 md:h-48 rounded overflow-hidden">
@@ -25,7 +24,7 @@ export default function ProductsGrid({ products }: { products: Product[] }) {
                       src={image}
                       alt={name}
                       fill
-                      // sizes=" (max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw "
+                      sizes=" (max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw "
                       priority
                       className="rounded w-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                     />
@@ -40,7 +39,7 @@ export default function ProductsGrid({ products }: { products: Product[] }) {
               </Card>
             </Link>
             <div className="absolute top-7 right-7 z-5">
-              <FavoriteToggleButton productId={productId} />
+              <FavoriteToggleButton productId={id} />
             </div>
           </article>
         );
