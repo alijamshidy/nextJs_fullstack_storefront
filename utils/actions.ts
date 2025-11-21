@@ -1,17 +1,32 @@
-"use server";
-import db from "@/utils/db";
+import { PrismaClient } from "@prisma/client";
+import { redirect } from "next/navigation";
+
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    accelerateUrl: process.env.DATABASE_URL,
+  });
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+export default prisma;
+// fetch محصولات فیچرد
 export const fetchFeaturedProducts = async () => {
-  const products = await db?.product?.findMany({
+  const products = await prisma.product.findMany({
     where: {
       featured: true,
     },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
-  // await new Promise(resolve => setTimeout(resolve, 5000));
   return products;
 };
 export const fetchAllProducts = async ({ search = "" }: { search: string }) => {
   const allProducts =
-    (await db?.product?.findMany({
+    (await prisma.product.findMany({
       where: {
         OR: [
           { name: { contains: search, mode: "insensitive" } },
@@ -23,4 +38,14 @@ export const fetchAllProducts = async ({ search = "" }: { search: string }) => {
       },
     })) || [];
   return allProducts;
+};
+
+export const fetchSingleProduct = async (productId: string) => {
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+  });
+  if (!product) {
+    redirect(`/products`);
+  }
+  return product;
 };
