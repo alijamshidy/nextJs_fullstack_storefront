@@ -6,7 +6,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-export default function BreadCrumb({ name }: { name: string }) {
+export default function BreadCrumbs({ name }: { name: string }) {
   return (
     <Breadcrumb>
       <BreadcrumbList>
