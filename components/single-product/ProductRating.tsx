@@ -7,9 +7,8 @@ export default function ProductRating({ productId }: { productId: string }) {
   const countValue = `(${count} reviews)`;
   return (
     <span className={calssName}>
-      <FaStar className="w-3 h-3">
-        {rating} {countValue}
-      </FaStar>
+      <FaStar className="w-3 h-3" />
+      {rating} {countValue}
     </span>
   );
 }
