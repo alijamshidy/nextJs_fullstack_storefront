@@ -1,20 +1,8 @@
-import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
+import prisma from "./db";
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
-
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    accelerateUrl: process.env.DATABASE_URL,
-  });
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-
-export default prisma;
-// fetch محصولات فیچرد
 export const fetchFeaturedProducts = async () => {
-  const products = await prisma.product.findMany({
+  const products = await prisma?.product?.findMany({
     where: {
       featured: true,
     },
@@ -26,7 +14,7 @@ export const fetchFeaturedProducts = async () => {
 };
 export const fetchAllProducts = async ({ search = "" }: { search: string }) => {
   const allProducts =
-    (await prisma.product.findMany({
+    (await prisma?.product?.findMany({
       where: {
         OR: [
           { name: { contains: search, mode: "insensitive" } },
@@ -41,11 +29,12 @@ export const fetchAllProducts = async ({ search = "" }: { search: string }) => {
 };
 
 export const fetchSingleProduct = async (productId: string) => {
-  const product = await prisma.product.findUnique({
+  const product = await prisma?.product?.findUnique({
     where: { id: productId },
   });
   if (!product) {
     redirect(`/products`);
   }
+
   return product;
 };
