@@ -1,19 +1,11 @@
 import ProductsContainer from "@/components/products/ProductsContainer";
-import { use } from "react";
 
-export default function Page({
+export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  searchParams: Promise<{ search: string; layout: string }>;
 }) {
-  const filters = use(searchParams);
-
-  const search = Array.isArray(filters.search)
-    ? filters.search[0] ?? ""
-    : filters.search ?? "";
-  const layout = Array.isArray(filters.layout)
-    ? filters.layout[0] ?? "grid"
-    : filters.layout ?? "grid";
+  const { search, layout } = await searchParams;
 
   return (
     <>
