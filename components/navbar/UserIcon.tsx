@@ -7,11 +7,12 @@ export default async function UserIcon() {
   if (profileImage) {
     return (
       <Image
-        fill
+        width={24}
+        height={24}
         priority
         src={profileImage}
         alt=""
-        className="w-6 h-6 rounded-full object-cover"
+        className="rounded-full object-cover"
       />
     );
   }
