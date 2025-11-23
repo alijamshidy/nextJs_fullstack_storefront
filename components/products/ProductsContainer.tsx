@@ -36,7 +36,7 @@ export default async function ProductsContainer({
               </Link>
             </Button>
             <Button
-              variant={layout === "list" ? "default" : "ghost"}
+              variant={layout !== "grid" ? "default" : "ghost"}
               size={"icon"}
               asChild>
               <Link href={`/products?layout=list${searchTerm}`}>
