@@ -6,7 +6,11 @@ type TextAreaInputProps = {
   labelText?: string;
   defaultValue?: string;
 };
-function TextAreaInput({ name, labelText, defaultValue }: TextAreaInputProps) {
+export default function TextAreaInput({
+  name,
+  labelText,
+  defaultValue,
+}: TextAreaInputProps) {
   return (
     <div className="mb-2">
       <Label
