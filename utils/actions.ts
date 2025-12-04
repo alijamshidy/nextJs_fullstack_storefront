@@ -1,3 +1,4 @@
+"use server";
 import { redirect } from "next/navigation";
 import prisma from "./db";
 
@@ -37,4 +38,11 @@ export const fetchSingleProduct = async (productId: string) => {
   }
 
   return product;
+};
+
+export const createProductAction = async (
+  prevState: any,
+  formData: FormData
+): Promise<{ message: string }> => {
+  return await { message: "product created!" };
 };
