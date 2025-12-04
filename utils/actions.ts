@@ -8,7 +8,10 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_KEY,
   api_secret: process.env.CLOUDINARY_SECRET,
 });
-
+type CloudinaryUploadResult = {
+  secure_url: string;
+  public_id: string;
+};
 const getAuthUser = async () => {
   const user = await currentUser();
   if (!user) {
@@ -59,44 +62,50 @@ export const fetchSingleProduct = async (productId: string) => {
 
   return product;
 };
+export type CreateProductState = {
+  message: string | null;
+  success?: boolean;
+};
 
 export const createProductAction = async (
-  prevState: any,
+  prevState: CreateProductState,
   formData: FormData
-): Promise<{ message: string }> => {
+): Promise<CreateProductState> => {
   const user = await getAuthUser();
   try {
     const name = formData.get("name") as string;
     const company = formData.get("company") as string;
     const price = Number(formData.get("price") as string);
-    let image = formData.get("image") as File;
+    const imageFile = formData.get("image") as File;
     const description = formData.get("description") as string;
     const featured = Boolean(formData.get("featured") as string);
-    const arrayBuffer = await image.arrayBuffer();
+
+    const arrayBuffer = await imageFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const uploadResult = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: "storeFront",
-          resource_type: "image",
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-      uploadStream.end(buffer);
-    });
+    const uploadResult = await new Promise<CloudinaryUploadResult>(
+      (resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: "storeFront",
+            resource_type: "image",
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result as CloudinaryUploadResult);
+          }
+        );
+        uploadStream.end(buffer);
+      }
+    );
 
     const imageUrl = uploadResult.secure_url;
-    image = imageUrl;
-    console.log(image);
+
     await prisma.product.create({
       data: {
         name,
         company,
         price,
-        image,
+        image: imageUrl,
         description,
         featured,
         clerkId: user.id,
