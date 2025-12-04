@@ -7,13 +7,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { links } from "@/utils/links";
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { LuAlignLeft } from "react-icons/lu";
 import { Button } from "../ui/button";
 import SignOutLink from "./SignOutLink";
 import UserIcon from "./UserIcon";
 
-export default function LinksDropdown() {
+export default async function LinksDropdown() {
+  const userId = (await auth()).userId;
+  const isAdminUser = userId === process.env.ADMIN_USER_ID;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -43,6 +46,9 @@ export default function LinksDropdown() {
         </SignedOut>
         <SignedIn>
           {links.map(link => {
+            if (link.label === "dashboard" && !isAdminUser) {
+              return null;
+            }
             return (
               <DropdownMenuItem key={link.href}>
                 <Link
