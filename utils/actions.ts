@@ -63,7 +63,7 @@ export const fetchSingleProduct = async (productId: string) => {
   return product;
 };
 export type CreateProductState = {
-  message: string | null;
+  message: string;
   success?: boolean;
 };
 
