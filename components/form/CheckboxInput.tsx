@@ -6,7 +6,11 @@ type CheckboxInputProps = {
   label: string;
   defaultChecked?: boolean;
 };
-function CheckboxInput({ name, label, defaultChecked }: CheckboxInputProps) {
+export default function CheckboxInput({
+  name,
+  label,
+  defaultChecked,
+}: CheckboxInputProps) {
   return (
     <div className="mb-2 flex items-center space-x-2">
       <Checkbox
