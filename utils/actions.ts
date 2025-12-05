@@ -3,6 +3,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { v2 as cloudinary } from "cloudinary";
 import { redirect } from "next/navigation";
 import prisma from "./db";
+import { productSchema, validateWithZodSchema } from "./schemas";
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_KEY,
@@ -73,11 +74,9 @@ export const createProductAction = async (
 ): Promise<CreateProductState> => {
   const user = await getAuthUser();
   try {
-    const name = formData.get("name") as string;
-    const company = formData.get("company") as string;
-    const price = Number(formData.get("price") as string);
+    const rawData = Object.fromEntries(formData);
+    const validatedFields = validateWithZodSchema(productSchema, rawData);
     const imageFile = formData.get("image") as File;
-    const description = formData.get("description") as string;
     const featured = Boolean(formData.get("featured") as string);
 
     const arrayBuffer = await imageFile.arrayBuffer();
@@ -102,11 +101,8 @@ export const createProductAction = async (
 
     await prisma.product.create({
       data: {
-        name,
-        company,
-        price,
+        ...validatedFields,
         image: imageUrl,
-        description,
         featured,
         clerkId: user.id,
       },
