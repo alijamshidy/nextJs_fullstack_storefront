@@ -1,104 +1,79 @@
 "use server";
+
 import { currentUser } from "@clerk/nextjs/server";
-import { v2 as cloudinary } from "cloudinary";
+
 import { redirect } from "next/navigation";
+import { uploadResult } from "./cloudinary";
 import prisma from "./db";
-import { productSchema, validateWithZodSchema } from "./schemas";
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_NAME,
-  api_key: process.env.CLOUDINARY_KEY,
-  api_secret: process.env.CLOUDINARY_SECRET,
-});
-type CloudinaryUploadResult = {
-  secure_url: string;
-  public_id: string;
-};
-const getAuthUser = async () => {
-  const user = await currentUser();
-  if (!user) {
-    redirect("/");
-  }
-  return user;
-};
-const renderError = (error: unknown): { message: string } => {
-  console.log(error);
-  return {
-    message: error instanceof Error ? error.message : "there was an error...",
-  };
-};
-export const fetchFeaturedProducts = async () => {
-  const products = await prisma?.product?.findMany({
-    where: {
-      featured: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-  return products;
-};
-export const fetchAllProducts = async ({ search = "" }: { search: string }) => {
-  const allProducts =
-    (await prisma?.product?.findMany({
-      where: {
-        OR: [
-          { name: { contains: search, mode: "insensitive" } },
-          { company: { contains: search, mode: "insensitive" } },
-        ],
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    })) || [];
-  return allProducts;
-};
+import { imageSchema, productSchema, validateWithZodSchema } from "./schemas";
 
-export const fetchSingleProduct = async (productId: string) => {
-  const product = await prisma?.product?.findUnique({
-    where: { id: productId },
-  });
-  if (!product) {
-    redirect(`/products`);
-  }
-
-  return product;
-};
 export type CreateProductState = {
   message: string;
   success?: boolean;
+};
+
+const getAuthUser = async () => {
+  const user = await currentUser();
+  if (!user) redirect("/");
+  return user;
+};
+
+const renderError = (error: unknown): CreateProductState => ({
+  message: error instanceof Error ? error.message : "There was an error...",
+});
+
+export const fetchFeaturedProducts = async () => {
+  return prisma.product.findMany({
+    where: { featured: true },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
+export const fetchAllProducts = async ({ search = "" }: { search: string }) => {
+  return prisma.product.findMany({
+    where: {
+      OR: [
+        { name: { contains: search, mode: "insensitive" } },
+        { company: { contains: search, mode: "insensitive" } },
+      ],
+    },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
+export const fetchSingleProduct = async (productId: string) => {
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+  });
+
+  if (!product) redirect("/products");
+  return product;
 };
 
 export const createProductAction = async (
   prevState: CreateProductState,
   formData: FormData
 ): Promise<CreateProductState> => {
-  const user = await getAuthUser();
   try {
+    const user = await getAuthUser();
+
+    // Validate text inputs
     const rawData = Object.fromEntries(formData);
     const validatedFields = validateWithZodSchema(productSchema, rawData);
-    const imageFile = formData.get("image") as File;
-    const featured = Boolean(formData.get("featured") as string);
 
+    // Validate image
+    const imageFile = formData.get("image") as File;
+    validateWithZodSchema(imageSchema, { image: imageFile });
+
+    const featured = Boolean(formData.get("featured"));
+
+    // Upload image to Cloudinary
     const arrayBuffer = await imageFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const uploadResult = await new Promise<CloudinaryUploadResult>(
-      (resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            folder: "storeFront",
-            resource_type: "image",
-          },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result as CloudinaryUploadResult);
-          }
-        );
-        uploadStream.end(buffer);
-      }
-    );
 
-    const imageUrl = uploadResult.secure_url;
+    const imageUrl = await uploadResult(buffer);
 
+    // Save product to DB
     await prisma.product.create({
       data: {
         ...validatedFields,
@@ -107,7 +82,8 @@ export const createProductAction = async (
         clerkId: user.id,
       },
     });
-    return { message: "product created" };
+
+    return { message: "Product created", success: true };
   } catch (error) {
     return renderError(error);
   }
