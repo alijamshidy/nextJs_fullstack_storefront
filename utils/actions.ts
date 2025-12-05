@@ -18,6 +18,13 @@ const getAuthUser = async () => {
   return user;
 };
 
+const getAdminUser = async () => {
+  const user = await getAuthUser();
+  if (user.id !== process.env.ADMIN_USER_ID) redirect("/");
+
+  return user;
+};
+
 const renderError = (error: unknown): CreateProductState => ({
   message: error instanceof Error ? error.message : "There was an error...",
 });
@@ -87,4 +94,13 @@ export const createProductAction = async (
   } catch (error) {
     return renderError(error);
   }
+};
+
+export const fetchAdminProducts = async () => {
+  await getAdminUser();
+  return await prisma.product.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 };
