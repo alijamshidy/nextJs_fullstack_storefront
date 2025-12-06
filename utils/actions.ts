@@ -2,6 +2,7 @@
 
 import { currentUser } from "@clerk/nextjs/server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { uploadResult } from "./cloudinary";
 import prisma from "./db";
@@ -103,4 +104,20 @@ export const fetchAdminProducts = async () => {
       createdAt: "desc",
     },
   });
+};
+
+export const deleteProductAction = async (prevState: { productId: string }) => {
+  const { productId } = prevState;
+  await getAdminUser();
+  try {
+    await prisma.product.delete({
+      where: {
+        id: productId,
+      },
+    });
+    revalidatePath("/admin/products");
+    return { message: "product removed" };
+  } catch (error) {
+    return renderError(error);
+  }
 };
