@@ -161,5 +161,33 @@ export const updateProductImageAction = async (
   prevState: CreateProductState,
   formData: FormData
 ) => {
-  return { message: "Product Image updated successfully" };
+  try {
+    await getAuthUser();
+    const image = formData.get("image") as File;
+    const productId = formData.get("id") as string;
+    const oldImageUrl = formData.get("url") as string;
+
+    validateWithZodSchema(imageSchema, { image });
+
+    console.log(image, productId, oldImageUrl);
+
+    // Upload image to Cloudinary
+    const arrayBuffer = await image.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const imageUrl = await uploadResult(buffer);
+    await deleteImage(oldImageUrl);
+    await prisma.product.update({
+      where: {
+        id: productId,
+      },
+      data: {
+        image: imageUrl,
+      },
+    });
+    revalidatePath(`/admin/products/${productId}/edit`);
+    return { message: "Product Image updated successfully" };
+  } catch (error) {
+    return renderError(error);
+  }
 };
