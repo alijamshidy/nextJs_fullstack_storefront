@@ -3,6 +3,8 @@
 import { cn } from "@/lib/utils";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { useFormStatus } from "react-dom";
+import { FaRegPenToSquare } from "react-icons/fa6";
+import { LuTrash2 } from "react-icons/lu";
 import { Button } from "../ui/button";
 
 type btnSize = "default" | "lg" | "sm";
@@ -35,3 +37,29 @@ export default function SubmitButton({
     </Button>
   );
 }
+
+type actionType = "edit" | "delete";
+export const IconButton = ({ actionType }: { actionType: actionType }) => {
+  const { pending } = useFormStatus();
+
+  const renderIcon = () => {
+    switch (actionType) {
+      case "edit":
+        return <FaRegPenToSquare />;
+      case "delete":
+        return <LuTrash2 />;
+      default:
+        const never: never = actionType;
+        throw new Error(`Invalid action type: ${never}`);
+    }
+  };
+  return (
+    <Button
+      type="submit"
+      size={"icon"}
+      variant={"link"}
+      className="p-2 cursor-pointer">
+      {pending ? <ReloadIcon className="animate-spin" /> : renderIcon()}
+    </Button>
+  );
+};
