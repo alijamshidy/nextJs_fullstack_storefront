@@ -1,7 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-// -----------------------------------------------------
-// Cloudinary Setup
-// -----------------------------------------------------
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME!,
   api_key: process.env.CLOUDINARY_KEY!,
@@ -30,4 +28,40 @@ export async function uploadResult(buffer: object): Promise<string> {
     }
   );
   return uploadResult.secure_url;
+}
+
+type CloudinaryDeleteResult = {
+  result: string;
+};
+export function getPublicIdFromUrl(url: string): string {
+  const cleanedUrl = url.split("?")[0];
+
+  const parts = cleanedUrl.split("/upload/");
+  if (parts.length < 2) {
+    throw new Error("Invalid Cloudinary URL");
+  }
+
+  let path = parts[1];
+
+  path = path.replace(/^v[0-9]+\//, "");
+
+  path = path.replace(/\.[^/.]+$/, "");
+
+  return path;
+}
+
+export async function deleteImage(
+  imageUrl: string
+): Promise<CloudinaryDeleteResult> {
+  const publicId = await getPublicIdFromUrl(imageUrl);
+  console.log(publicId);
+  try {
+    const result = await cloudinary.uploader.destroy(publicId, {
+      resource_type: "image",
+    });
+    return result;
+  } catch (err) {
+    console.error("Delete error:", err);
+    throw err;
+  }
 }
