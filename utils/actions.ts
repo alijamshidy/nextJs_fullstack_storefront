@@ -206,14 +206,31 @@ export const fetchFavoriteId = async ({ productId }: { productId: string }) => {
   return favorite?.id || null;
 };
 
-export const toggleFavoriteAction = async ({
-  productId,
-  favoriteId,
-  pathName,
-}: {
+export const toggleFavoriteAction = async (prevState: {
   productId: string;
   favoriteId: string | null;
   pathName: string;
 }) => {
-  return { message: "toggle action" };
+  const user = await getAuthUser();
+  const { productId, favoriteId, pathName } = prevState;
+  try {
+    if (favoriteId) {
+      await prisma.favorite.delete({
+        where: {
+          id: favoriteId,
+        },
+      });
+    } else {
+      await prisma.favorite.create({
+        data: {
+          productId,
+          clerkId: user.id,
+        },
+      });
+    }
+    revalidatePath(pathName);
+    return { message: favoriteId ? "removed from faves" : "added to faves" };
+  } catch (error) {
+    return renderError(error);
+  }
 };
