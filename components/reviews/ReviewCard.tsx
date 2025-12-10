@@ -35,7 +35,7 @@ export default function ReviewCard({ reviewInfo, children }: ReviewCardProps) {
       <CardContent>
         <Comment comment={reviewInfo.comment} />
       </CardContent>
-      <div className="absolute top-3 rigth-3">{children}</div>
+      <div className="absolute top-3 right-3">{children}</div>
     </Card>
   );
 }
