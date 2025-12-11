@@ -5,8 +5,9 @@ import AddToCart from "@/components/single-product/AddToCart";
 import BreadCrumbs from "@/components/single-product/BreadCrumbs";
 import ProductRating from "@/components/single-product/ProductRating";
 import ShareButton from "@/components/single-product/ShareButton";
-import { fetchSingleProduct } from "@/utils/actions";
+import { fetchSingleProduct, findExistingReview } from "@/utils/actions";
 import { formatCurrency } from "@/utils/format";
+import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 
 export default async function SingleProductPage({
@@ -18,6 +19,9 @@ export default async function SingleProductPage({
   const product = await fetchSingleProduct(id);
   const { name, image, company, description, price } = product;
   const dollarAmount = formatCurrency(price);
+  const userId = (await auth()).userId;
+  const reviewDoesNotExist =
+    userId && !(await findExistingReview(userId, product.id));
   return (
     <section>
       <BreadCrumbs name={name} />
@@ -55,7 +59,7 @@ export default async function SingleProductPage({
         </div>
       </div>
       <ProductReviews productId={id} />
-      <SubmitReview productId={id} />
+      {reviewDoesNotExist && <SubmitReview productId={id} />}
     </section>
   );
 }
