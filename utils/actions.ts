@@ -321,7 +321,14 @@ export const deleteReviewAction = async (prevState: { reviewId: string }) => {
     return renderError(error);
   }
 };
-export const findExistingReview = async () => {};
+export const findExistingReview = async (userId: string, productId: string) => {
+  return await prisma.review.findFirst({
+    where: {
+      clerkId: userId,
+      productId,
+    },
+  });
+};
 export const fetchProductRating = async (productId: string) => {
   const result = await prisma.review.groupBy({
     by: ["productId"],
