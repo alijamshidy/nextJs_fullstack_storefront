@@ -565,7 +565,7 @@ export const createOrderAction = async (prevState: any, formData: FormData) => {
         id: cart.id,
       },
     });
-    return { message: "order created" };
+    redirect("/orders");
   } catch (error) {
     return renderError(error);
   }
