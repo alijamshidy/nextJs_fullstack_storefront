@@ -1,7 +1,8 @@
 "use client";
 
-import { removeCartItemAction } from "@/utils/actions";
+import { removeCartItemAction, updateCartItemAction } from "@/utils/actions";
 import { useState } from "react";
+import { toast } from "sonner";
 import SubmitButton from "../form/Buttons";
 import FormContainer from "../form/FormContainer";
 import SelectProductAmount, {
@@ -16,8 +17,18 @@ export default function ThirdColumn({
   id: string;
 }) {
   const [amount, setAmount] = useState(quantity);
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleAmountChange = async (value: number) => {
+    setIsLoading(true);
+    toast("Calculating...");
+    const result = await updateCartItemAction({
+      amount: value,
+      cartItemId: id,
+    });
     setAmount(value);
+    toast(result.message);
+    setIsLoading(false);
   };
 
   return (
