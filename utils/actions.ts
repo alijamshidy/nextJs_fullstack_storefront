@@ -573,17 +573,10 @@ export const createOrderAction = async (prevState: any, formData: FormData) => {
       },
     });
     orderId = order.id;
-
-    // await prisma.cart.delete({
-    //   where: {
-    //     id: cart.id,
-    //   },
-    // });
-    redirect(`/checkout?orderId=${orderId}&cartId=${cartId}`);
   } catch (error) {
     return renderError(error);
   }
-  redirect("/orders");
+  redirect(`/checkout?orderId=${orderId}&cartId=${cartId}`);
 };
 
 export const fetchUserOrders = async () => {
