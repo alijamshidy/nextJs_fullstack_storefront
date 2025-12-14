@@ -5,7 +5,8 @@ export default async function Page({
 }: {
   searchParams: Promise<{ search: string; layout: string }>;
 }) {
-  const { search, layout } = await searchParams;
+  const search = (await searchParams).search || "";
+  const layout = (await searchParams).layout || "grid";
 
   return (
     <>
